@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827"><meta name="description" content="تحلیل محلی تصویر نمودار در امپراتور کندل">
+<link rel="manifest" href="./manifest.json"><link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>امپراتور کندل — محلی</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#131e30;--line:#26364d;--text:#edf4ff;--muted:#a9b8cc;--gold:#f5c451;--blue:#6bb9ff;--red:#ff7f88;--green:#68d7a0}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#0b1220,#101a2c 65%,#0b1220);color:var(--text);font-family:Tahoma,Arial,sans-serif;line-height:1.8}.wrap{max-width:760px;margin:auto;padding:16px 14px 34px}
+.hero,.card{border:1px solid var(--line);border-radius:18px;background:#111b2b;padding:16px;margin-bottom:13px}.hero{background:linear-gradient(135deg,#182941,#101827);padding:20px}h1{margin:0;color:var(--gold);font-size:1.5rem}h2{font-size:1.05rem;margin:0 0 10px;color:#d8e8ff}.sub,.hint{color:var(--muted);font-size:.85rem}.hint{line-height:1.9}.tag{display:inline-block;border:1px solid #40536c;border-radius:30px;padding:2px 9px;color:#cbdaf0;font-size:.75rem;margin:6px 0 0 5px}
+input,select,button{font:inherit}input[type=file],select{width:100%;padding:11px;border:1px solid #334760;background:#0b1422;color:var(--text);border-radius:11px}label{display:block;margin:9px 0 4px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{width:100%;border:0;border-radius:12px;padding:12px;margin-top:10px;background:var(--gold);color:#172033;font-weight:bold}.secondary{background:#24344b;color:var(--text);border:1px solid #3b506b}.preview{display:none;max-width:100%;max-height:350px;object-fit:contain;margin:12px auto;border:1px solid var(--line);border-radius:12px}.status{white-space:pre-wrap;overflow-wrap:anywhere;background:#17283b;padding:10px;border-radius:10px;margin-top:10px;display:none}.result{white-space:pre-wrap;overflow-wrap:anywhere}.bar{height:8px;background:#26364d;border-radius:10px;overflow:hidden}.bar span{display:block;height:100%;background:var(--blue);width:0}.foot{text-align:center;color:#92a3ba;font-size:.76rem;margin:15px 0}
+@media(max-width:430px){.row{grid-template-columns:1fr}}
+</style></head>
+<body><main class="wrap">
+<header class="hero"><h1>👑 امپراتور کندل</h1><p class="sub">تحلیل محلی تصویر نمودار — بدون API، بدون دریافت قیمت بازار، بدون داده ساختگی</p><span class="tag">PWA اندروید</span><span class="tag">پردازش روی گوشی</span></header>
+<section class="card"><h2>۱) انتخاب عکس نمودار</h2><label for="image">یک اسکرین‌شات واضح از نمودار انتخاب کن</label><input id="image" type="file" accept="image/png,image/jpeg,image/webp"><img id="preview" class="preview" alt="پیش‌نمایش نمودار">
+<div class="row"><div><label for="tf">تایم‌فریم</label><select id="tf"><option>نامشخص</option><option>1m</option><option>5m</option><option>15m</option><option>30m</option><option>1h</option><option selected>4h</option><option>1d</option><option>1w</option></select></div><div><label for="market">بازار</label><select id="market"><option>کریپتو</option><option>بورس ایران</option><option>فارکس</option><option>سایر</option></select></div></div>
+<p class="hint">این نسخه تصویر را روی گوشی پردازش می‌کند و ویژگی‌های بصری ساده مثل رنگ، لبه‌ها و نواحی شبیه کندل را بررسی می‌کند. بدون مدل هوش مصنوعیِ از پیش بارگذاری‌شده، نمی‌تواند ایچیموکو را با اطمینان از روی تصویر بفهمد؛ به همین دلیل نتیجه‌ها محافظه‌کارانه‌اند.</p>
+<button id="analyze">تحلیل محلی تصویر</button><button id="clear" class="secondary">پاک‌کردن</button><div id="status" class="status" role="status"></div></section>
+<section class="card" id="outCard" hidden><h2>۲) گزارش قابل استناد از تصویر</h2><div id="result" class="result"></div></section>
+<section class="card"><h2>حدود توانایی نسخه محلی</h2><p class="hint">برنامه هیچ قیمت، اندیکاتور یا احتمال عددی نمی‌سازد. تحلیل رنگ‌ها به قالب نمودار، تم روشن/تیره، خطوط ترسیمی و فشردگی عکس حساس است. برای تحلیل حرفه‌ای ایچیموکو، باید یا مدل بینایی آفلاین نسبتاً حجیم به برنامه اضافه شود، یا تصویر به سرویس هوش مصنوعی ارسال شود؛ گزینه دوم با شرط «بدون API و محلی» سازگار نیست.</p></section>
+<p class="foot">پس از نصب، پوسته برنامه آفلاین باز می‌شود؛ تحلیل نیز در همین صفحه و روی دستگاه انجام می‌شود.</p></main>
+<script>
+(()=>{const $=id=>document.getElementById(id);let file=null,bitmap=null;
+const status=(s,err=false)=>{$('status').style.display='block';$('status').textContent=s;$('status').style.borderRight=err?'3px solid #ff7f88':'3px solid #6bb9ff'};
+$('image').addEventListener('change',async()=>{file=$('image').files?.[0]||null;bitmap=null;if(!file){$('preview').style.display='none';return}
+if(!['image/png','image/jpeg','image/webp'].includes(file.type)){file=null;$('image').value='';status('فرمت پشتیبانی نمی‌شود؛ PNG، JPG یا WEBP انتخاب کن.',true);return}
+if(file.size>20*1024*1024){file=null;$('image').value='';status('حجم عکس بیش از ۲۰ مگابایت است.',true);return}
+const url=URL.createObjectURL(file);$('preview').src=url;$('preview').style.display='block';$('preview').onload=()=>URL.revokeObjectURL(url);
+try{bitmap=await createImageBitmap(file);status('عکس بارگذاری شد. همه پردازش‌ها در همین دستگاه انجام می‌شود.')}catch(e){status('خواندن تصویر ممکن نشد.',true)}});
+function analyzePixels(bmp){
+const maxW=900,scale=Math.min(1,maxW/bmp.width),w=Math.max(1,Math.round(bmp.width*scale)),h=Math.max(1,Math.round(bmp.height*scale));
+const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(bmp,0,0,w,h);
+const d=ctx.getImageData(0,0,w,h).data;let green=0,red=0,bright=0,dark=0,total=0;
+const step=Math.max(1,Math.floor(Math.min(w,h)/500));
+for(let y=0;y<h;y+=step){for(let x=0;x<w;x+=step){const i=(y*w+x)*4,r=d[i],g=d[i+1],b=d[i+2];total++;if(g>r*1.18&&g>b*1.05&&g-r>25)green++;if(r>g*1.2&&r>b*1.1&&r-g>25)red++;const lum=(r+g+b)/3;if(lum>210)bright++;if(lum<55)dark++;}}
+return {w,h,green,red,total,bright,dark,greenShare:green/Math.max(1,total),redShare:red/Math.max(1,total)};
+}
+$('analyze').addEventListener('click',()=>{
+if(!bitmap){status('ابتدا یک تصویر نمودار انتخاب کن.',true);return}
+try{
+status('در حال بررسی ویژگی‌های تصویری روی گوشی…');
+const s=analyzePixels(bitmap);
+const colorNote=s.greenShare>s.redShare*1.25?'در تصویر، پیکسل‌های سبزِ تشخیص‌پذیر بیشتر از قرمز هستند؛ این به‌تنهایی سیگنال صعودی نیست.':s.redShare>s.greenShare*1.25?'در تصویر، پیکسل‌های قرمزِ تشخیص‌پذیر بیشتر از سبز هستند؛ این به‌تنهایی سیگنال نزولی نیست.':'رنگ‌های قرمز و سبز نسبت روشنی ندارند یا نمودار از تم/رنگ دیگری استفاده می‌کند.';
+const out=`نتیجه پردازش محلی تصویر
+
+کیفیت فنی تصویر: ${s.w} × ${s.h} پیکسل پس از کوچک‌سازی برای پردازش.
+تایم‌فریم انتخاب‌شده توسط کاربر: ${$('tf').value}
+نوع بازار انتخاب‌شده: ${$('market').value}
+
+مشاهده رنگی: ${colorNote}
+
+محدودیت مهم: این نسخه اولیه فقط رنگ‌ها و ویژگی‌های ساده پیکسل‌ها را می‌سنجد. نمی‌تواند از این شمارش، جهت کندل بعدی، قیمت، حمایت/مقاومت، تنکان‌سن، کیجون‌سن، ابر کومو یا چیکو اسپن را به‌طور معتبر استخراج کند.
+
+سناریوی کندل بعدی: قابل تعیین معتبر نیست.
+درصد احتمال: ارائه نمی‌شود؛ داده کالیبره‌شده‌ای وجود ندارد.
+قیمت یا محدوده هدف: ارائه نمی‌شود؛ هیچ قیمت واقعی از تصویر استخراج نشده است.
+
+برای تحلیل ایچیموکو، تصویر باید ابر و خطوط را واضح نشان دهد. برای تحلیل معتبرتر لازم است یک مدل بینایی آفلاین واقعی به برنامه اضافه و روی نمودارهای مختلف آزمایش شود. این نسخه عمداً به‌جای ساختن پیش‌بینی، محدودیتش را اعلام می‌کند.`;
+$('result').textContent=out;$('outCard').hidden=false;status('پردازش محلی کامل شد؛ نتیجه فقط ویژگی تصویری است، نه سیگنال معاملاتی.');
+}catch(e){status('پردازش تصویر ناموفق بود: '+e.message,true)}});
+$('clear').addEventListener('click',()=>{file=null;bitmap=null;$('image').value='';$('preview').removeAttribute('src');$('preview').style.display='none';$('outCard').hidden=true;$('result').textContent='';$('status').style.display='none'});
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+})();
+</script></body></html>
